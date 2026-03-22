@@ -1,0 +1,138 @@
+Lithuania retention pipeline — multiscenario benchmark (replicated from workbook formulas)
+========================================================================
+Workbook: /Users/databacklog/Documents/GitHub/LAM-Benchmark-Scenario/final_lithuania_model (1).xlsx
+SHA-256: f83e5b1f678dc0a54643b4f509293caf247710ca5f060dece1ec5fdf5e4ef175
+EC 2024 Ageing Report — Lithuania (context PDF): https://economy-finance.ec.europa.eu/document/download/b8767642-877c-4605-ad16-8b4b174e1f05_en?filename=2024-ageing-report-country-fiche-Lithuania.pdf
+
+Inputs (summary)
+  Horizon: 2025–2050 (25 transitions; Model rows 4–29)
+  Start stocks: pop 2,890,000, work 1,750,000, old 560,000
+  Baseline decline rates (calibrated): pop 0.860% / yr, work 1.251%, old-age growth 1.116%
+  EC-style anchors in Inputs: 2050 pop 2,329,000, dependency 0.579
+  Policy headcount engine: immigrants 3500, returnees 1000, grads 600, retention 0.7, exits 800
+  Baseline net-retained constant (from Model!F4, workbook): 72
+  Fiscal scalars: policy budget €60,000,000, net benefit / contributor (Inputs) €3,800 — fiscal column uses budget line like Excel, not B34.
+
+Scenario drivers (Inflow, Retention, Exit, Parent, Policy-cost, adders G–I)
+  Baseline: in 0, ret 1, ex 0, par 0, pol 0 | +popDecl 0, +workDecl 0, +oldGr 0
+  Moderate: in 1, ret 1, ex 1, par 1, pol 1 | +popDecl 0, +workDecl 0, +oldGr 0
+  Strong: in 1.35, ret 1.05, ex 0.9, par 1.2, pol 1.1 | +popDecl 0, +workDecl 0, +oldGr 0
+  Stress: in 0.55, ret 0.9, ex 1.15, par 0.6, pol 0.9 | +popDecl 0.002, +workDecl 0.0015, +oldGr 0.0005
+
+2050 outcomes — simulation vs Excel cached Model row 29
+------------------------------------------------------------------------
+
+Baseline:
+  pop: sim 2,329,000 | xlsx 2,329,000 [OK]
+  work: sim 1,277,500 | xlsx 1,277,500 [OK]
+  old: sim 739,000 | xlsx 739,000 [OK]
+  dep: sim 0.58 | xlsx 0.58 [OK]
+  netRet: sim 72 | xlsx 72 [OK]
+  fiscal: sim 4.3200e+9 | xlsx 0 [mismatch]
+  Avg net retained / yr (sim, 25 yrs): 72
+  Avg fiscal index / yr (sim): 4.3200e+9
+
+Moderate:
+  pop: sim 2,391,556.34 | xlsx 2,391,556.34 [OK]
+  work: sim 1,346,999.03 | xlsx 1,346,999.03 [OK]
+  old: sim 739,000 | xlsx 739,000 [OK]
+  dep: sim 0.55 | xlsx 0.55 [OK]
+  netRet: sim 2,770 | xlsx 2,770 [OK]
+  fiscal: sim 1.6620e+11 | xlsx 1.6620e+11 [OK]
+  Avg net retained / yr (sim, 25 yrs): 2,770
+  Avg fiscal index / yr (sim): 1.6620e+11
+
+Strong:
+  pop: sim 2,427,023.19 | xlsx 2,427,023.19 [OK]
+  work: sim 1,382,837.98 | xlsx 1,382,837.98 [OK]
+  old: sim 739,000 | xlsx 739,000 [OK]
+  dep: sim 0.53 | xlsx 0.53 [OK]
+  netRet: sim 4,340.47 | xlsx 4,340.48 [OK]
+  fiscal: sim 2.6043e+11 | xlsx 2.6043e+11 [OK]
+  Avg net retained / yr (sim, 25 yrs): 4,340.48
+  Avg fiscal index / yr (sim): 2.6043e+11
+
+Stress:
+  pop: sim 2,233,032.84 | xlsx 2,233,032.84 [OK]
+  work: sim 1,253,562.11 | xlsx 1,253,562.11 [OK]
+  old: sim 748,190 | xlsx 748,190 [OK]
+  dep: sim 0.6 | xlsx 0.6 [OK]
+  netRet: sim 847.15 | xlsx 847.15 [OK]
+  fiscal: sim 5.0832e+10 | xlsx 5.0832e+10 [OK]
+  Avg net retained / yr (sim, 25 yrs): 847.15
+  Avg fiscal index / yr (sim): 5.0832e+10
+
+========================================================================
+Interpretation: benchmark scenario model; policy scenarios add retained contributors to pop/working-age only.
+Stress adds higher demographic headwinds via Scenario_Drivers G–I. Fiscal column is stylized (× annual policy budget line).
+Note: Baseline fiscal in the workbook often shows cached 0 while formulas imply netRet × policy budget; the script follows the Excel formulas (72 × €60M per year in Baseline).
+
+
+Lithuania retention pipeline — multiscenario benchmark (replicated from workbook formulas)
+========================================================================
+Workbook: /Users/databacklog/Documents/GitHub/LAM-Benchmark-Scenario/final_lithuania_model (2).xlsx
+SHA-256: f83e5b1f678dc0a54643b4f509293caf247710ca5f060dece1ec5fdf5e4ef175
+EC 2024 Ageing Report — Lithuania (context PDF): https://economy-finance.ec.europa.eu/document/download/b8767642-877c-4605-ad16-8b4b174e1f05_en?filename=2024-ageing-report-country-fiche-Lithuania.pdf
+
+Inputs (summary)
+  Horizon: 2025–2050 (25 transitions; Model rows 4–29)
+  Start stocks: pop 2,890,000, work 1,750,000, old 560,000
+  Baseline decline rates (calibrated): pop 0.860% / yr, work 1.251%, old-age growth 1.116%
+  EC-style anchors in Inputs: 2050 pop 2,329,000, dependency 0.579
+  Policy headcount engine: immigrants 3500, returnees 1000, grads 600, retention 0.7, exits 800
+  Baseline net-retained constant (from Model!F4, workbook): 72
+  Fiscal scalars: policy budget €60,000,000, net benefit / contributor (Inputs) €3,800 — fiscal column uses budget line like Excel, not B34.
+
+Scenario drivers (Inflow, Retention, Exit, Parent, Policy-cost, adders G–I)
+  Baseline: in 0, ret 1, ex 0, par 0, pol 0 | +popDecl 0, +workDecl 0, +oldGr 0
+  Moderate: in 1, ret 1, ex 1, par 1, pol 1 | +popDecl 0, +workDecl 0, +oldGr 0
+  Strong: in 1.35, ret 1.05, ex 0.9, par 1.2, pol 1.1 | +popDecl 0, +workDecl 0, +oldGr 0
+  Stress: in 0.55, ret 0.9, ex 1.15, par 0.6, pol 0.9 | +popDecl 0.002, +workDecl 0.0015, +oldGr 0.0005
+
+2050 outcomes — simulation vs Excel cached Model row 29
+------------------------------------------------------------------------
+
+Baseline:
+  pop: sim 2,329,000 | xlsx 2,329,000 [OK]
+  work: sim 1,277,500 | xlsx 1,277,500 [OK]
+  old: sim 739,000 | xlsx 739,000 [OK]
+  dep: sim 0.58 | xlsx 0.58 [OK]
+  netRet: sim 72 | xlsx 72 [OK]
+  fiscal: sim 4.3200e+9 | xlsx 0 [mismatch]
+  Avg net retained / yr (sim, 25 yrs): 72
+  Avg fiscal index / yr (sim): 4.3200e+9
+
+Moderate:
+  pop: sim 2,391,556.34 | xlsx 2,391,556.34 [OK]
+  work: sim 1,346,999.03 | xlsx 1,346,999.03 [OK]
+  old: sim 739,000 | xlsx 739,000 [OK]
+  dep: sim 0.55 | xlsx 0.55 [OK]
+  netRet: sim 2,770 | xlsx 2,770 [OK]
+  fiscal: sim 1.6620e+11 | xlsx 1.6620e+11 [OK]
+  Avg net retained / yr (sim, 25 yrs): 2,770
+  Avg fiscal index / yr (sim): 1.6620e+11
+
+Strong:
+  pop: sim 2,427,023.19 | xlsx 2,427,023.19 [OK]
+  work: sim 1,382,837.98 | xlsx 1,382,837.98 [OK]
+  old: sim 739,000 | xlsx 739,000 [OK]
+  dep: sim 0.53 | xlsx 0.53 [OK]
+  netRet: sim 4,340.47 | xlsx 4,340.48 [OK]
+  fiscal: sim 2.6043e+11 | xlsx 2.6043e+11 [OK]
+  Avg net retained / yr (sim, 25 yrs): 4,340.48
+  Avg fiscal index / yr (sim): 2.6043e+11
+
+Stress:
+  pop: sim 2,233,032.84 | xlsx 2,233,032.84 [OK]
+  work: sim 1,253,562.11 | xlsx 1,253,562.11 [OK]
+  old: sim 748,190 | xlsx 748,190 [OK]
+  dep: sim 0.6 | xlsx 0.6 [OK]
+  netRet: sim 847.15 | xlsx 847.15 [OK]
+  fiscal: sim 5.0832e+10 | xlsx 5.0832e+10 [OK]
+  Avg net retained / yr (sim, 25 yrs): 847.15
+  Avg fiscal index / yr (sim): 5.0832e+10
+
+========================================================================
+Interpretation: benchmark scenario model; policy scenarios add retained contributors to pop/working-age only.
+Stress adds higher demographic headwinds via Scenario_Drivers G–I. Fiscal column is stylized (× annual policy budget line).
+Note: Baseline fiscal in the workbook often shows cached 0 while formulas imply netRet × policy budget; the script follows the Excel formulas (72 × €60M per year in Baseline).
