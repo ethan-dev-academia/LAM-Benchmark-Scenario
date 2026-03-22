@@ -1,14 +1,14 @@
-# Lithuania retention pipeline — scenario benchmark
+# Lithuania Retention Pipeline — Scenario Benchmark Model
 
-This repository holds an **Excel-based demographic scenario model** for Lithuania (Euro Challenge / fiscal–demographic storyline) and a small **automation script** that re-runs the same arithmetic and checks it against the spreadsheet.
+This repository is a demographic scenario model for Lithuania and **automation script** that re-runs the arithmetic and checks it against spreadsheet (verify OpenAI data).
 
-This document is written for **two audiences**:
+**Two Groups**:
 
 1. **EU-facing financial and policy analysts** — start with [Executive summary](#executive-summary-for-policy-and-finance-readers) and [How to interpret outputs](#how-to-interpret-the-outputs-eu-fiscal-analyst-lens).
-2. **Engineers and data staff** — see [Technical implementation](#technical-implementation-for-cs--data-staff).
+2. **Engineers and data people** — see [Technical implementation](#technical-implementation-for-cs--data-staff).
 
-**Official long-term context (European Commission):**  
-[2024 Ageing Report — Lithuania country fiche (PDF)](https://economy-finance.ec.europa.eu/document/download/b8767642-877c-4605-ad16-8b4b174e1f05_en?filename=2024-ageing-report-country-fiche-Lithuania.pdf)
+**Official long-term context (European Commission):** 
+[2024 Ageing Report — Lithuania country fiche (PDF)](https://economy-finance.ec.europa.eu/document/download/b8767642-877c-4605-ad16-8b4b174e1f05_en?filename=2024-ageing-report-country-fiche-Lithuania.pdf) (this is where everything is based from)
 
 ---
 
