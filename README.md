@@ -75,9 +75,7 @@ So it moves **monotonically** with retention in a **toy accounting** sense. **Do
 
 ---
 
-## Model logic in plain formulas (renders in any Markdown viewer)
-
-*Below, all formulas are in **monospace blocks** so they display correctly in Cursor, VS Code, GitHub, and PDF exports. Symbols like `×` mean multiply.*
+## Model logic
 
 ### 1) Net retained contributors per year (Moderate / Strong / Stress)
 
