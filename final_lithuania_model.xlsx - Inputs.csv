@@ -1,0 +1,35 @@
+Final Model for Euro Challenge 2026 - Lithuania ,
+Lithuania Retention Pipeline - Final Eurostat-Baseline Model,
+,
+"This workbook matches the final agreed model logic: EC/Eurostat-style baseline, policy measured as improvement relative to baseline, and family support as a tertiary module.",
+,
+Core demographic inputs,
+Start year,2025
+End year,2050
+Starting population,"2,890,000"
+Starting working-age population,"1,750,000"
+Starting old-age population,"560,000"
+Baseline annual total-population decline,0.9%
+Baseline annual working-age decline,1.3%
+Annual old-age population growth,1.1%
+Official baseline anchors,
+,
+2050 population baseline anchor,"2,329,000"
+2050 old-age dependency baseline anchor,1
+,
+"Policy engine inputs (annual, before scenario scaling)",
+Immigrant entrants ages 18–34 helped by policy,"3,500"
+Returning Lithuanians ages 18–34 helped by policy,"1,000"
+Priority-sector graduates retained by policy,600
+Retention rate on policy entrants,70.0%
+Annual exits from retained pool,800
+Additional parents kept in labor force,450
+Base net retained contributors per year,"2,770"
+,
+Fiscal inputs,
+Average annual wage of retained cohort (€),"28,000"
+Effective tax + social contribution rate,35.0%
+Annual public-service cost per added resident (€),"6,000"
+Annual national policy cost (€),"60,000,000"
+Net annual fiscal benefit per retained contributor (€),"3,800"
+Approx. break-even retained contributors / year,0.0001
