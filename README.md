@@ -1,21 +1,161 @@
-# LAM-Benchmark-Scenario — Lithuania fiscal–demographic simulation
+# Lithuania retention pipeline — scenario benchmark
 
-Reference documentation for the **Euro Challenge / Lithuania retention pipeline** workbook and the **Node.js replication script** that benchmarks all scenarios against the Excel **Model** sheet.
+This repository holds an **Excel-based demographic scenario model** for Lithuania (Euro Challenge / fiscal–demographic storyline) and a small **automation script** that re-runs the same arithmetic and checks it against the spreadsheet.
+
+This document is written for **two audiences**:
+
+1. **EU-facing financial and policy analysts** — start with [Executive summary](#executive-summary-for-policy-and-finance-readers) and [How to interpret outputs](#how-to-interpret-the-outputs-eu-fiscal-analyst-lens).
+2. **Engineers and data staff** — see [Technical implementation](#technical-implementation-for-cs--data-staff).
+
+**Official long-term context (European Commission):**  
+[2024 Ageing Report — Lithuania country fiche (PDF)](https://economy-finance.ec.europa.eu/document/download/b8767642-877c-4605-ad16-8b4b174e1f05_en?filename=2024-ageing-report-country-fiche-Lithuania.pdf)
 
 ---
 
-## What this repository is
+## Executive summary (for policy and finance readers)
 
-- A **scenario benchmark**, not an economic **forecast**. It answers: *if* Lithuania retains a specified flow of young contributors each year, *how do 2050 population and old-age dependency move relative to an EC/Eurostat-style baseline?*
-- The **Excel workbook** (`final_lithuania_model*.xlsx`) is the original specification; **`scripts/lithuania_model_sim.mjs`** reproduces its **Inputs → Scenario_Drivers → Model** logic without third-party xlsx libraries (reads OOXML via `unzip` + XML parse).
+### What question does this model answer?
+
+It does **not** produce a macro forecast or a general government balance. It asks a narrower **“what-if”** question:
+
+> *Starting from a Eurostat-style demographic path for Lithuania, if the country **retains** an additional flow of young working-age contributors each year (immigrants, returnees, priority-sector graduates, net of exits), **how much does 2050 total population, working-age population, and the old-age dependency ratio move** compared with a **no-extra-retention baseline**?*
+
+That is useful for **storylines** about **labour supply**, **future tax base**, and **age-related spending pressure**, in line with how the **2024 Ageing Report** frames long-term challenges — but it is **not** a replacement for the Commission’s own fiscal projections.
+
+### Why it matters in the euro area
+
+Lithuania uses the **euro**. That limits **external adjustment through the exchange rate**. Over the long run, **demographic structure** (workers vs older dependents) feeds into **pension, health, and care** spending intensity. This model highlights **dependency ratios** and **population paths** under **alternative retention assumptions**, which speak to **fiscal sustainability narratives** without claiming to reproduce **EDP/SGP** aggregates.
+
+### What you should **not** use this model for
+
+| Misuse | Why |
+|--------|-----|
+| Predicting exact **pension spending % GDP** in 2050 | Use **EC ageing report** tables; this workbook does not model pension rules or revenue. |
+| **General government net lending** | The workbook **“fiscal” column** is a **stylised index**, not cash government accounts. |
+| **EU fund absorption** (AMIF, ERDF, ESF+) | Financing slides are **separate**; they are not fed through this spreadsheet as programme ledgers. |
+
+### Where the numbers live after a run
+
+Run the script (or open Excel) and read **`lithuania_fiscal_benchmark_report.txt`** for a text summary, or **`Q_AND_A_Answer_Doc.md`** for presentation-aligned Q&A.
 
 ---
 
-## What this repository is not
+## How to interpret the outputs (EU fiscal analyst lens)
 
-- Not a general-equilibrium or pension microsimulation.
-- Not a substitute for the **European Commission 2024 Ageing Report** fiscal projections; those provide **spending-to-GDP** context. This model provides a **compact demographic + retention** layer.
-- The workbook **“fiscal” column** is a **stylized index** (scaled flows × a budget line), **not** general government net lending or AMIF/ERDF cash flows.
+### Core stock variables (end-2050, or any year in the grid)
+
+| Variable | Definition in this model | Typical use in debate |
+|----------|-------------------------|------------------------|
+| **Total population** | Headcount track including policy-driven additions in scenario columns | Size of economy / domestic market (crude); not GDP. |
+| **Working-age population** | People in the **working-age** bracket as defined in the workbook | Proxy for **labour supply** and **tax base** potential. |
+| **Old-age population** | Older bracket as defined in the workbook | Proxy for **age-related spending** pressure (with country-specific rules elsewhere). |
+| **Old-age dependency ratio** | **Old-age population ÷ working-age population** | Standard **demographic pressure** indicator; higher means fewer workers per older person. |
+| **Net retained contributors / year** | Policy “engine”: helped inflows × retention, minus exits (see formulas below) | **Throughput** of the retention story; comparable across scenarios. |
+
+### The four scenarios (plain language)
+
+| Scenario | Intuition |
+|----------|-----------|
+| **Baseline** | **No policy uplift** to population/working-age from the retention engine (demographic decay only, as calibrated). The spreadsheet still carries a **small constant** in the “net retained” column for the baseline block — a **modelling artefact**; see [Known quirks](#known-quirks-and-modelling-artefacts). |
+| **Moderate** | **Central** implementation: policy inflows, retention, exits, and parent effect at “1×” multipliers. |
+| **Strong** | **Upside**: higher assisted inflows, better retention, lower effective exits, stronger parent labour-force scaling. |
+| **Stress** | **Downside**: weaker inflows/retention, higher exits, slightly **harsher** background demographic adjustments (extra decline / old-age growth adders). |
+
+### The “fiscal” column — read this carefully
+
+In Excel **Model**, each scenario block has a **fiscal** column. It is **not** “surplus or deficit”. It is a **stylised scalar** built from:
+
+- **Net retained contributors** × a large **annual policy budget line** (Inputs **B33**, e.g. €60 million in the packaged file), **plus**
+- A **parent** term: parents kept in labour force × wage × tax/SSC rate, **minus**
+- **Public service cost per added resident** × a **policy-cost multiplier**.
+
+So it moves **monotonically** with retention in a **toy accounting** sense. **Do not** map it 1:1 to **government accounts** or **ageing report** spending paths without a separate macro bridge.
+
+**Important:** Inputs **B34** (“net annual fiscal benefit per retained contributor”) is **documented for narrative** but is **not** the driver of this fiscal column in the replicated Excel logic (the column uses **B33**).
+
+---
+
+## Model logic in plain formulas (renders in any Markdown viewer)
+
+*Below, all formulas are in **monospace blocks** so they display correctly in Cursor, VS Code, GitHub, and PDF exports. Symbols like `×` mean multiply.*
+
+### 1) Net retained contributors per year (Moderate / Strong / Stress)
+
+```
+NetRet = (Immigrants + Returnees + Graduates) × m_inflow × (BaseRetention × m_retention)
+         − Exits × m_exit
+```
+
+- **Immigrants, Returnees, Graduates, BaseRetention, Exits** come from the **Inputs** sheet (e.g. B21–B25).
+- **m_inflow, m_retention, m_exit** come from the scenario row on **Scenario_Drivers**.
+
+### 2) Baseline net retained (as implemented in the workbook)
+
+The **Baseline** block does **not** use formula (1) with the baseline multipliers. The Excel file stores a **constant** in column **F** (read from **Model!F4**, often **72**). The replication script uses that same constant.
+
+### 3) Effective demographic rates each year
+
+```
+effective_pop_decline   = B12_pop_decline   + add_pop_decline    (column G)
+effective_work_decline  = B13_work_decline  + add_work_decline   (column H)
+effective_old_growth    = B14_old_growth    + add_old_growth     (column I)
+```
+
+`B12`, `B13`, `B14` are decimals (e.g. 0.0086 ≈ 0.86% per year). **Stress** adds positive **G/H/I** “adders” on top.
+
+### 4) Next year — total population, working-age, old-age
+
+**Baseline** (no policy addition to population / working-age from retention):
+
+```
+P_next = P_now × (1 − effective_pop_decline)
+W_next = W_now × (1 − effective_work_decline)
+O_next = O_now × (1 + effective_old_growth)
+```
+
+**Policy scenarios** (Moderate, Strong, Stress):
+
+```
+P_next = P_now × (1 − effective_pop_decline) + NetRet
+W_next = W_now × (1 − effective_work_decline) + NetRet + (Parents × m_parent)
+O_next = O_now × (1 + effective_old_growth)
+```
+
+- **Parents** = Inputs **B26** (additional parents kept in labour force).
+- **m_parent** = Scenario_Drivers column **E**.
+
+### 5) Old-age dependency ratio
+
+```
+DependencyRatio = Old_age_next / Working_age_next
+```
+
+### 6) Stylised fiscal index (per year)
+
+**Policy scenarios:**
+
+```
+FiscalIndex = NetRet × PolicyBudget
+              + Parents × m_parent × (Wage × TaxAndSSC_rate)
+              − PublicServiceCostPerResident × m_policy_cost
+```
+
+**Baseline:**
+
+```
+FiscalIndex = NetRet × PolicyBudget − PublicServiceCostPerResident × m_policy_cost
+```
+
+- **PolicyBudget** = Inputs **B33**. **Wage** = **B30**. **TaxAndSSC_rate** = **B31**. **PublicServiceCostPerResident** = **B32**.
+- **m_policy_cost** = Scenario_Drivers column **F** (for Baseline, typically **0**).
+
+### 7) Time horizon
+
+```
+number_of_years = EndYear − StartYear          (e.g. 2050 − 2025 = 25 steps)
+```
+
+Each step advances one row in the **Model** sheet (row 4 → row 29 for 2025 → 2050 in the packaged workbook).
 
 ---
 
@@ -23,160 +163,62 @@ Reference documentation for the **Euro Challenge / Lithuania retention pipeline*
 
 | Path | Purpose |
 |------|--------|
-| `final_lithuania_model (1).xlsx`, `(2).xlsx` | Source workbook(s). Default inputs for the script if present in repo root. |
-| `final_lithuania_model.xlsx - Inputs.csv` | Optional text extract of **Inputs**-style labels (not a full workbook). |
-| `scripts/lithuania_model_sim.mjs` | Simulation + validation vs Excel cached row 29. |
-| `lithuania_fiscal_benchmark_report.txt` | **Generated** full text report (overwritten each run). |
-| `Q_AND_A_Answer_Doc.md` | Presentation-aligned Q&A and talking points with numbers. |
-| `README.md` | This file. |
+| `final_lithuania_model (1).xlsx`, `(2).xlsx` | Master workbook(s); default inputs for the script if present. |
+| `final_lithuania_model.xlsx - Inputs.csv` | Optional flat extract of labels/values (not a full workbook). |
+| `scripts/lithuania_model_sim.mjs` | Replication + validation vs Excel **Model** row 29. |
+| `lithuania_fiscal_benchmark_report.txt` | **Generated** benchmark text (overwritten each run). |
+| `Q_AND_A_Answer_Doc.md` | Deck-aligned Q&A and headline numbers. |
+| `README.md` | This reference. |
 
 ---
 
 ## Workbook structure (expected sheets)
 
-The script assumes the standard sheet order from the packaged model:
+| Order | Sheet | Role |
+|------:|-------|------|
+| 1 | **Inputs** | Stocks, decay rates, policy headcounts, fiscal parameters, anchors. |
+| 2 | **Scenario_Drivers** | Four rows (Excel rows 4–7): multipliers **B–I**. |
+| 3 | **Model** | Annual grid; **B–G** Baseline, **H–M** Moderate, **N–S** Strong, **T–Y** Stress. |
+| 4 | **Summary** | Dashboard. |
+| 5 | **Notes** | Narrative. |
 
-| Order | Sheet name | Role |
-|------:|------------|------|
-| 1 | **Inputs** | Demographics, policy headcounts, fiscal parameters, 2050 anchors. |
-| 2 | **Scenario_Drivers** | Four rows (Excel rows 4–7): multipliers and demographic “adders” per scenario. |
-| 3 | **Model** | Year grid 2025–2050; columns **B–G** Baseline, **H–M** Moderate, **N–S** Strong, **T–Y** Stress. |
-| 4 | **Summary** | Dashboard (pulls from **Model**). |
-| 5 | **Notes** | Interpretation. |
-
-If sheet order changes, the script must be updated (`readSheetCells(tmp, sheetNum, …)`).
+If sheet order changes, the script’s sheet indices must be updated.
 
 ---
 
-## Inputs sheet — cell map (column B)
+## Inputs sheet — cells read by the script (column B)
 
-These are the cells **`lithuania_model_sim.mjs`** reads:
-
-| Cell | Meaning |
+| Cell | Content |
 |------|--------|
-| `B7` | Start year (e.g. 2025) |
-| `B8` | End year (e.g. 2050) |
-| `B9`–`B11` | Starting total population, working-age population, old-age population |
-| `B12` | Baseline annual **total** population decline rate (decimal, calibrated) |
-| `B13` | Baseline annual **working-age** decline rate (decimal) |
-| `B14` | Baseline annual **old-age** growth rate (decimal) |
-| `B17` | Official-style **2050 population anchor** (reference) |
-| `B18` | Official-style **2050 old-age dependency anchor** (reference) |
-| `B21` | Immigrant entrants (18–34) helped by policy, per year |
-| `B22` | Returning Lithuanians (18–34) helped, per year |
-| `B23` | Priority-sector graduates retained, per year |
-| `B24` | Base retention rate on policy entrants |
-| `B25` | Annual exits from retained pool |
-| `B26` | Additional parents kept in labor force (headcount-style input) |
-| `B30` | Average annual wage of retained cohort (€) |
-| `B31` | Effective tax + social contribution rate (decimal) |
-| `B32` | Annual public-service cost per added resident (€) |
-| `B33` | Annual national policy cost line (€) — used in the **stylized fiscal** formula |
-| `B34` | Net annual fiscal benefit per retained contributor (€) — **documented** in Inputs; **not** used in the Excel fiscal column the script mirrors |
+| B7, B8 | Start year, end year |
+| B9–B11 | Starting total pop, working-age, old-age |
+| B12–B14 | Baseline decay/growth rates (decimals) |
+| B17–B18 | Reference 2050 population and dependency anchor |
+| B21–B26 | Policy flows (immigrants, returnees, grads, retention, exits, parents) |
+| B30–B34 | Wage, tax/SSC rate, service cost, policy budget line, net benefit (B34 not used in fiscal column replication) |
 
 ---
 
-## Scenario_Drivers sheet (Excel rows 4–7)
+## Scenario_Drivers (rows 4–7)
 
-Each row defines one scenario. Columns **B–I**:
+| Excel column | Role |
+|--------------|------|
+| B | Inflow multiplier |
+| C | Retention multiplier |
+| D | Exit multiplier |
+| E | Parent labour-force multiplier |
+| F | Policy-cost multiplier (fiscal side) |
+| G | Adder to total pop decline rate |
+| H | Adder to working-age decline rate |
+| I | Adder to old-age growth rate |
 
-| Col | Symbol in code | Meaning |
-|-----|----------------|--------|
-| B | `mIn` | Inflow multiplier |
-| C | `mRet` | Retention multiplier |
-| D | `mExit` | Exit multiplier |
-| E | `mParent` | Parent labor-force multiplier |
-| F | `mPol` | Policy-cost multiplier (fiscal side) |
-| G | `addPop` | Adder to total population decline rate |
-| H | `addWork` | Adder to working-age decline rate |
-| I | `addOld` | Adder to old-age growth rate |
-
-**Default interpretation in the packaged workbook:**
-
-- **Baseline:** inflow multiplier `0`, exit multiplier `0` → policy engine would yield **zero** net retained if computed from drivers alone; the **Model** sheet uses a **constant** baseline net-retained column (**F4:F29** = stored value, typically **72**).
-- **Moderate / Strong / Stress:** full policy recursion with **net retained** from the engine, scaled by multipliers; **Stress** adds positive **G/H/I** (worse background demographics).
-
-Row-to-scenario mapping in code:
-
-- `drivers[0]` → Baseline (Excel row 4)  
-- `drivers[1]` → Moderate (row 5)  
-- `drivers[2]` → Strong (row 6)  
-- `drivers[3]` → Stress (row 7)  
+Code mapping: row 4 → Baseline, 5 → Moderate, 6 → Strong, 7 → Stress.
 
 ---
 
-## Model dynamics (replicated formulas)
+## Model sheet — where 2050 lives
 
-### Time indexing
-
-- **Model row 4** = year `startYear` (2025), opening stocks = `Inputs!B9:B11`.
-- **Model row 29** = year `endYear` (2050).
-- Number of transitions: **`endYear - startYear`** (e.g. **25** for 2025→2050).  
-  Each iteration advances one year and should match **Model** row `4 + k` → `4 + k + 1`.
-
-### Net retained contributors (policy scenarios)
-
-\[
-\text{NR} = (I_\text{imm} + I_\text{ret} + I_\text{grad}) \cdot m_\text{in} \cdot (r_\text{base} \cdot m_\text{ret}) - E_\text{exits} \cdot m_\text{exit}
-\]
-
-where \(I_*\), \(r_\text{base}\), \(E_\text{exits}\) come from **Inputs** and \(m_*\) from **Scenario_Drivers**.
-
-**Baseline** in the script: **NR** = constant read from **`Model!F4`** (fallback **72** if missing), **not** the formula above with row-4 multipliers.
-
-### Population and labor (per year, per scenario)
-
-Effective rates (decimals):
-
-- \(\delta_P = \texttt{B12} + G\)  
-- \(\delta_W = \texttt{B13} + H\)  
-- \(g_O = \texttt{B14} + I\)  
-
-**Baseline** (`policyAddsRetained = false`):
-
-\[
-P_{t+1} = P_t (1 - \delta_P),\quad
-W_{t+1} = W_t (1 - \delta_W),\quad
-O_{t+1} = O_t (1 + g_O)
-\]
-
-**Policy scenarios** (`true`):
-
-\[
-P_{t+1} = P_t (1 - \delta_P) + \text{NR},\quad
-W_{t+1} = W_t (1 - \delta_W) + \text{NR} + B_{26}\cdot m_\text{parent},\quad
-O_{t+1} = O_t (1 + g_O)
-\]
-
-**Old-age dependency ratio** (each year):
-
-\[
-\text{Dep} = O_{t+1} / W_{t+1}
-\]
-
-### Stylized “fiscal” index (per year)
-
-Matches the **Model** sheet’s fiscal columns:
-
-**Policy scenarios:**
-
-\[
-F_t = \text{NR} \cdot B_{33} + B_{26} \cdot m_\text{parent} \cdot (B_{30}\cdot B_{31}) - B_{32}\cdot m_\text{pol}
-\]
-
-**Baseline:**
-
-\[
-F_t = \text{NR} \cdot B_{33} - B_{32}\cdot m_\text{pol}
-\]
-
-with \(m_\text{pol}\) from **Baseline** scenario row (**Scenario_Drivers** row 4, column F — **0** in default workbook).
-
-**Important:** This is **not** “net fiscal balance”; it is a **large-index scaling** tied to **`B33`**. **Do not** equate it to € government surplus/deficit.
-
----
-
-## Excel **Model** column map (2050 = row 29)
+2050 corresponds to **row 29** in the packaged **Model** sheet.
 
 | Scenario | Pop | Work | Old | Dep | Net ret | Fiscal |
 |----------|-----|------|-----|-----|---------|--------|
@@ -185,91 +227,81 @@ with \(m_\text{pol}\) from **Baseline** scenario row (**Scenario_Drivers** row 4
 | Strong | N | O | P | Q | R | S |
 | Stress | T | U | V | W | X | Y |
 
-The script compares its final-year state to these cells for validation.
-
 ---
 
-## Requirements
+## Technical implementation (for CS / data staff)
 
-- **Node.js** (ES modules; tested with modern Node, e.g. v18+).
-- **`unzip`** on `PATH` (standard on macOS/Linux; used to extract `.xlsx`).
+### Stack
 
-No `npm install` is required.
+- **Node.js** (ES modules). **No `npm install`.**
+- **`unzip`** on the PATH: `.xlsx` files are ZIP archives; the script unpacks **OOXML** and parses **XML** directly (no `openpyxl` / `xlsx` npm dependency).
 
----
+### What the script does
 
-## How to run
+1. Unzip workbook → read `xl/sharedStrings.xml` + `xl/worksheets/sheet1.xml` (Inputs), `sheet2.xml` (Scenario_Drivers), `sheet3.xml` (Model).
+2. Parse cells into a `Map` keyed by **A1** notation.
+3. Run the same recursion as documented in [Model logic](#model-logic-in-plain-formulas-renders-in-any-markdown-viewer).
+4. Compare simulated **2050** to **cached** values in **Model row 29** (validation).
+5. Print report to **stdout** and write **`lithuania_fiscal_benchmark_report.txt`**.
+6. Emit **SHA-256** of each workbook (useful when comparing two “versions”).
 
-From the repository root:
+### Run commands
 
 ```bash
 node scripts/lithuania_model_sim.mjs
 ```
 
-Uses every default path that exists:
-
-- `final_lithuania_model (1).xlsx`
-- `final_lithuania_model (2).xlsx`
-
-Or pass explicit workbooks:
-
 ```bash
 node scripts/lithuania_model_sim.mjs path/to/model_a.xlsx path/to/model_b.xlsx
 ```
 
-### Outputs
+Default paths (if files exist): `final_lithuania_model (1).xlsx`, `final_lithuania_model (2).xlsx` in the repo root.
 
-1. **Stdout:** human-readable benchmark for each file (SHA-256, inputs summary, scenario drivers, 2050 comparison, averages).  
-2. **`lithuania_fiscal_benchmark_report.txt`:** same content **concatenated** for all processed files (overwritten each run).  
-3. **Stderr:** path to the written report file.
+### Validation rules
 
----
+- Numeric comparison uses a small **relative tolerance** (~1e-5) for most fields.
+- **Baseline fiscal:** Excel sometimes stores **G29 = 0** while the cell **formula** is `F × B33 − B32 × F_driver`. The script follows the **formula**, so you may see **`[mismatch]`** vs a stale **zero** cache. Policy scenarios **Moderate / Strong / Stress** matched cached values in testing.
 
-## Validation behavior
+### Code entry points
 
-For each scenario, the script compares **simulated 2050** to **cached Excel values** in **Model row 29** for `pop`, `work`, `old`, `dep`, `netRet`, `fiscal`.
+| Function / area | File | Role |
+|-----------------|------|------|
+| `loadWorkbook`, `readInputs`, `readDrivers` | `scripts/lithuania_model_sim.mjs` | Parse workbook |
+| `simulateScenario` | same | Year loop |
+| `readExcelBenchmark` | same | Pull row 29 for diff |
+| `buildReport` | same | Text report |
 
-- **Relative tolerance:** about **1e-5** for numeric fields.  
-- **Baseline fiscal:** Excel often stores **`G29 = 0`** while the **formula** is `F*B33 - B32*F4`. The script follows the **formula**, so the report flags **`[mismatch]`** for baseline fiscal when the cache is zero. **Moderate / Strong / Stress** fiscal values matched the cached workbook in testing.
+### Maintenance after Excel changes
 
----
-
-## Known quirks and design choices
-
-1. **Baseline net retained:** The workbook **Model** column **F** has **no formula** in the extracted XML — only a **constant** (e.g. **72**). The script reads **`Model!F4`** for that constant. This is **not** the same as setting inflow multiplier to zero in the policy engine (which would give **NR = 0**).
-2. **Baseline population path:** Baseline **does not** add **NR** to population or working-age stocks (matches Excel **B/C** columns for the Baseline block).
-3. **Duplicate workbooks:** If two `.xlsx` files are **byte-identical**, SHA-256 matches and the report prints twice; useful once you maintain **version A / B** with different inputs.
-4. **Inputs `B34`:** “Net benefit per contributor” is **for narrative / extended analysis**; the replicated fiscal column uses **`B33`**, not **`B34`**.
-
----
-
-## External reference
-
-- **EC 2024 Ageing Report — Lithuania (country fiche, PDF):**  
-  [download link](https://economy-finance.ec.europa.eu/document/download/b8767642-877c-4605-ad16-8b4b174e1f05_en?filename=2024-ageing-report-country-fiche-Lithuania.pdf)  
-
-Use this for **official** long-term fiscal and demographic **context**. The workbook’s **2050 population** and **dependency** anchors are styled to align with that **Eurostat / EC** framing (see **Inputs** and **Notes** in the workbook).
+1. Run `node scripts/lithuania_model_sim.mjs`.
+2. Fix any systematic `[Δ …%]` lines (logic or cell map drift).
+3. Update **`Q_AND_A_Answer_Doc.md`** if you keep static numbers there.
+4. If **sheet order** or **column layout** changes, update `readSheetCells(..., sheetNum)` and `readExcelBenchmark` column letters.
 
 ---
 
-## Related documentation
+## Known quirks and modelling artefacts
 
-- **`Q_AND_A_Answer_Doc.md`** — Judge Q&A, slide alignment, and headline numbers (e.g. Strong vs **~100k** population lift).  
-- **`lithuania_fiscal_benchmark_report.txt`** — Latest machine-generated numbers (regenerate after any workbook edit).
-
----
-
-## Maintenance checklist
-
-After editing the Excel model:
-
-1. Run `node scripts/lithuania_model_sim.mjs`.  
-2. Confirm all scenarios show **`[OK]`** except known **baseline fiscal** cache issue.  
-3. Copy refreshed sections into **`Q_AND_A_Answer_Doc.md`** if you keep a static snapshot there.  
-4. If sheet order or column layout changes, update **`lithuania_model_sim.mjs`** (`readSheetCells` indices, `readExcelBenchmark` column letters, and this README).
+1. **Baseline column F** is a **hard-coded series** in the workbook (no formula in the extracted XML), not the output of the inflow×retention engine with baseline multipliers.
+2. **Baseline** does **not** add **NetRet** into **P** or **W** (only demographic decay).
+3. **B34** is not used in the replicated **fiscal** column; **B33** is.
+4. Identical **.xlsx** byte copies produce **identical** SHA-256 and duplicate report sections until inputs diverge.
 
 ---
 
-## License / attribution
+## Related documents
 
-Euro Challenge team materials; workbook logic attributed to the team’s **final_lithuania_model** specification. Script is a **faithful mechanical replication** for benchmarking and CI-style checks.
+- **`Q_AND_A_Answer_Doc.md`** — oral-exam style Q&A tied to the team deck.
+- **`lithuania_fiscal_benchmark_report.txt`** — latest run output.
+
+---
+
+## Licence / attribution
+
+Euro Challenge team materials. The script is a **mechanical replication** of the team **final_lithuania_model** workbook for benchmarking and reproducibility.
+
+---
+
+### Note on mathematical notation in Markdown
+
+This README avoids **LaTeX** delimiters (`\[ … \]`, `\frac{}`) because many Markdown previews **do not render** them. All equations are in **fenced code blocks** or **inline prose** so they stay readable in **Cursor, VS Code, GitHub, and printed PDFs**. If you paste into a LaTeX paper, translate the code blocks into your preferred notation.
