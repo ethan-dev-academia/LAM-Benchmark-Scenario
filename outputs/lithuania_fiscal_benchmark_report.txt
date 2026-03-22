@@ -1,6 +1,6 @@
 Lithuania retention pipeline — multiscenario benchmark (replicated from workbook formulas)
 ========================================================================
-Workbook: /Users/databacklog/Documents/GitHub/LAM-Benchmark-Scenario/final_lithuania_model (1).xlsx
+Workbook: /Users/databacklog/Documents/GitHub/LAM-Benchmark-Scenario/workbooks/final_lithuania_model (1).xlsx
 SHA-256: f83e5b1f678dc0a54643b4f509293caf247710ca5f060dece1ec5fdf5e4ef175
 EC 2024 Ageing Report — Lithuania (context PDF): https://economy-finance.ec.europa.eu/document/download/b8767642-877c-4605-ad16-8b4b174e1f05_en?filename=2024-ageing-report-country-fiche-Lithuania.pdf
 
@@ -70,7 +70,7 @@ Note: Baseline fiscal in the workbook often shows cached 0 while formulas imply 
 
 Lithuania retention pipeline — multiscenario benchmark (replicated from workbook formulas)
 ========================================================================
-Workbook: /Users/databacklog/Documents/GitHub/LAM-Benchmark-Scenario/final_lithuania_model (2).xlsx
+Workbook: /Users/databacklog/Documents/GitHub/LAM-Benchmark-Scenario/workbooks/final_lithuania_model (2).xlsx
 SHA-256: f83e5b1f678dc0a54643b4f509293caf247710ca5f060dece1ec5fdf5e4ef175
 EC 2024 Ageing Report — Lithuania (context PDF): https://economy-finance.ec.europa.eu/document/download/b8767642-877c-4605-ad16-8b4b174e1f05_en?filename=2024-ageing-report-country-fiche-Lithuania.pdf
 

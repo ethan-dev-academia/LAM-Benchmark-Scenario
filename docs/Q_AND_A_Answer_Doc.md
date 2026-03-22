@@ -173,12 +173,12 @@
 
 ---
 
-## Full benchmark output (single workbook — `final_lithuania_model (1).xlsx`)
+## Full benchmark output (single workbook — `workbooks/final_lithuania_model (1).xlsx`)
 
 ```
 Lithuania retention pipeline — multiscenario benchmark (replicated from workbook formulas)
 ========================================================================
-Workbook: final_lithuania_model (1).xlsx
+Workbook: workbooks/final_lithuania_model (1).xlsx
 SHA-256: f83e5b1f678dc0a54643b4f509293caf247710ca5f060dece1ec5fdf5e4ef175
 EC 2024 Ageing Report — Lithuania (context PDF): https://economy-finance.ec.europa.eu/document/download/b8767642-877c-4605-ad16-8b4b174e1f05_en?filename=2024-ageing-report-country-fiche-Lithuania.pdf
 
@@ -246,7 +246,7 @@ Stress adds higher demographic headwinds via Scenario_Drivers G–I. Fiscal colu
 Note: Baseline fiscal in the workbook often shows cached 0 while formulas imply netRet × policy budget; the script follows the Excel formulas (72 × €60M per year in Baseline).
 ```
 
-**Regenerate this block:** `node scripts/lithuania_model_sim.mjs` → updates `lithuania_fiscal_benchmark_report.txt`.
+**Regenerate this block:** `node scripts/lithuania_model_sim.mjs` → updates `outputs/lithuania_fiscal_benchmark_report.txt`.
 
 ---
 
@@ -260,4 +260,4 @@ Note: Baseline fiscal in the workbook often shows cached 0 while formulas imply 
 
 ---
 
-*Document generated to align Q&A with `final_lithuania_model` + `lithuania_fiscal_benchmark_report.txt`. Update numbers after any workbook change.*
+*Document generated to align Q&A with `workbooks/final_lithuania_model*.xlsx` + `outputs/lithuania_fiscal_benchmark_report.txt`. Update numbers after any workbook change.*

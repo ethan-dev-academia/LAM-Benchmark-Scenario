@@ -8,7 +8,7 @@
  *
  * Usage:
  *   node scripts/lithuania_model_sim.mjs [workbook.xlsx ...]
- * Default: final_lithuania_model (1).xlsx and (2).xlsx in repo root.
+ * Default: workbooks/final_lithuania_model (1|2).xlsx (fallback: repo root).
  */
 
 import fs from "fs";
@@ -331,6 +331,8 @@ function buildReport(bundle) {
 
 function defaultPaths() {
   const cands = [
+    path.join(REPO_ROOT, "workbooks", "final_lithuania_model (1).xlsx"),
+    path.join(REPO_ROOT, "workbooks", "final_lithuania_model (2).xlsx"),
     path.join(REPO_ROOT, "final_lithuania_model (1).xlsx"),
     path.join(REPO_ROOT, "final_lithuania_model (2).xlsx"),
   ];
@@ -339,7 +341,9 @@ function defaultPaths() {
 
 const paths = process.argv.slice(2).length ? process.argv.slice(2) : defaultPaths();
 if (!paths.length) {
-  console.error("No workbook paths found. Pass .xlsx paths or place final_lithuania_model (1).xlsx in repo root.");
+  console.error(
+    "No workbook paths found. Pass .xlsx paths or place workbooks under workbooks/ (or repo root)."
+  );
   process.exit(1);
 }
 
@@ -357,6 +361,8 @@ for (const p of paths) {
 const combined = reports.join("\n\n\n");
 console.log(combined);
 
-const outFile = path.join(REPO_ROOT, "lithuania_fiscal_benchmark_report.txt");
+const outDir = path.join(REPO_ROOT, "outputs");
+fs.mkdirSync(outDir, { recursive: true });
+const outFile = path.join(outDir, "lithuania_fiscal_benchmark_report.txt");
 fs.writeFileSync(outFile, combined + "\n", "utf8");
 console.error("\nWrote:", outFile);

@@ -1,14 +1,14 @@
-# Lithuania Retention Pipeline — Scenario Benchmark Model
+# Lithuania retention pipeline — scenario benchmark
 
-This repository is a demographic scenario model for Lithuania and **automation script** that re-runs the arithmetic and checks it against spreadsheet (verify OpenAI data).
+This repository holds an **Excel-based demographic scenario model** for Lithuania (Euro Challenge / fiscal–demographic storyline) and a small **automation script** that re-runs the same arithmetic and checks it against the spreadsheet.
 
-**Two Groups**:
+This document is written for **two audiences**:
 
 1. **EU-facing financial and policy analysts** — start with [Executive summary](#executive-summary-for-policy-and-finance-readers) and [How to interpret outputs](#how-to-interpret-the-outputs-eu-fiscal-analyst-lens).
-2. **Engineers and data people** — see [Technical implementation](#technical-implementation-for-cs--data-staff).
+2. **Engineers and data staff** — see [Technical implementation](#technical-implementation-for-cs--data-staff).
 
-**Official long-term context (European Commission):** 
-[2024 Ageing Report — Lithuania country fiche (PDF)](https://economy-finance.ec.europa.eu/document/download/b8767642-877c-4605-ad16-8b4b174e1f05_en?filename=2024-ageing-report-country-fiche-Lithuania.pdf) (this is where everything is based from)
+**Official long-term context (European Commission):**  
+[2024 Ageing Report — Lithuania country fiche (PDF)](https://economy-finance.ec.europa.eu/document/download/b8767642-877c-4605-ad16-8b4b174e1f05_en?filename=2024-ageing-report-country-fiche-Lithuania.pdf)
 
 ---
 
@@ -36,7 +36,9 @@ Lithuania uses the **euro**. That limits **external adjustment through the excha
 
 ### Where the numbers live after a run
 
-Run the script (or open Excel) and read **`lithuania_fiscal_benchmark_report.txt`** for a text summary, or **`Q_AND_A_Answer_Doc.md`** for presentation-aligned Q&A.
+- **Text benchmark:** `outputs/lithuania_fiscal_benchmark_report.txt` (from `node scripts/lithuania_model_sim.mjs`)
+- **Charts / CSV:** `outputs/figures/<workbook-slug>/` (from `python scripts/plot_lithuania_benchmarks.py`)
+- **Presentation Q&A:** `docs/Q_AND_A_Answer_Doc.md`
 
 ---
 
@@ -161,14 +163,37 @@ Each step advances one row in the **Model** sheet (row 4 → row 29 for 2025 →
 
 ## Repository layout
 
+```text
+LAM-Benchmark-Scenario/
+├── README.md
+├── requirements-figures.txt
+├── workbooks/                    # Master .xlsx files (see workbooks/README.md)
+├── data/                         # Optional CSV exports (see data/README.md)
+├── docs/
+│   ├── README.md
+│   └── Q_AND_A_Answer_Doc.md    # Deck / judge Q&A
+├── outputs/                      # Generated artefacts (see outputs/README.md)
+│   ├── lithuania_fiscal_benchmark_report.txt
+│   └── figures/
+│       └── <workbook-slug>/      # e.g. final_lithuania_model_1 — PNG + CSV per source file
+├── scripts/
+│   ├── lithuania_model_sim.mjs
+│   └── plot_lithuania_benchmarks.py
+└── .venv/                        # Optional local Python env (gitignored)
+```
+
 | Path | Purpose |
 |------|--------|
-| `final_lithuania_model (1).xlsx`, `(2).xlsx` | Master workbook(s); default inputs for the script if present. |
-| `final_lithuania_model.xlsx - Inputs.csv` | Optional flat extract of labels/values (not a full workbook). |
+| `workbooks/*.xlsx` | Master scenario workbooks (default: `final_lithuania_model (1).xlsx`, `(2).xlsx`). |
+| `data/lithuania_model_inputs_export.csv` | Optional **Inputs**-style flat export (not a full workbook). |
 | `scripts/lithuania_model_sim.mjs` | Replication + validation vs Excel **Model** row 29. |
-| `lithuania_fiscal_benchmark_report.txt` | **Generated** benchmark text (overwritten each run). |
-| `Q_AND_A_Answer_Doc.md` | Deck-aligned Q&A and headline numbers. |
-| `README.md` | This reference. |
+| `scripts/plot_lithuania_benchmarks.py` | Matplotlib figures + wide CSV; filenames reference source **.xlsx** and **Model** sheet. |
+| `requirements-figures.txt` | Python deps for plotting. |
+| `outputs/lithuania_fiscal_benchmark_report.txt` | **Generated** text benchmark. |
+| `outputs/figures/<slug>/` | **Generated** PNGs and CSV (slug derived from workbook basename). |
+| `docs/Q_AND_A_Answer_Doc.md` | Presentation Q&A with headline numbers. |
+
+Scripts also look for `.xlsx` in the **repo root** if `workbooks/` copies are missing (backwards compatibility).
 
 ---
 
@@ -242,7 +267,7 @@ Code mapping: row 4 → Baseline, 5 → Moderate, 6 → Strong, 7 → Stress.
 2. Parse cells into a `Map` keyed by **A1** notation.
 3. Run the same recursion as documented in [Model logic](#model-logic-in-plain-formulas-renders-in-any-markdown-viewer).
 4. Compare simulated **2050** to **cached** values in **Model row 29** (validation).
-5. Print report to **stdout** and write **`lithuania_fiscal_benchmark_report.txt`**.
+5. Print report to **stdout** and write **`outputs/lithuania_fiscal_benchmark_report.txt`** (directory created automatically).
 6. Emit **SHA-256** of each workbook (useful when comparing two “versions”).
 
 ### Run commands
@@ -255,7 +280,7 @@ node scripts/lithuania_model_sim.mjs
 node scripts/lithuania_model_sim.mjs path/to/model_a.xlsx path/to/model_b.xlsx
 ```
 
-Default paths (if files exist): `final_lithuania_model (1).xlsx`, `final_lithuania_model (2).xlsx` in the repo root.
+Default paths (if files exist): `workbooks/final_lithuania_model (1).xlsx` and `(2).xlsx`, then the same names in the repo root.
 
 ### Validation rules
 
@@ -275,8 +300,68 @@ Default paths (if files exist): `final_lithuania_model (1).xlsx`, `final_lithuan
 
 1. Run `node scripts/lithuania_model_sim.mjs`.
 2. Fix any systematic `[Δ …%]` lines (logic or cell map drift).
-3. Update **`Q_AND_A_Answer_Doc.md`** if you keep static numbers there.
+3. Update **`docs/Q_AND_A_Answer_Doc.md`** if you keep static numbers there.
 4. If **sheet order** or **column layout** changes, update `readSheetCells(..., sheetNum)` and `readExcelBenchmark` column letters.
+
+### Figures and extra analysis (Python, matplotlib)
+
+Optional script for **charts and a wide CSV extract** straight from the Excel **Model** sheet (cached values — recalculate the workbook in Excel first if you want fresh numbers).
+
+**Install dependencies (once):**
+
+```bash
+pip install -r requirements-figures.txt
+```
+
+If macOS **`/usr/bin/python3`** fails (Xcode Command Line Tools prompt), use **[uv](https://docs.astral.sh/uv/)** to install a standalone Python and a project venv:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.local/bin:$PATH"
+uv python install 3.12
+uv venv --python 3.12 .venv
+uv pip install -r requirements-figures.txt
+.venv/bin/python scripts/plot_lithuania_benchmarks.py
+```
+
+**Generate PNGs + CSV** (default workbook: first match under `workbooks/`; default output: `outputs/figures/<workbook-slug>/`):
+
+```bash
+python scripts/plot_lithuania_benchmarks.py
+```
+
+**Custom paths:**
+
+```bash
+python scripts/plot_lithuania_benchmarks.py --workbook "workbooks/final_lithuania_model (1).xlsx" --out outputs/figures/custom-run
+python scripts/plot_lithuania_benchmarks.py --no-csv
+```
+
+**Naming convention** (each chart is self-describing and sorts in chart order):
+
+```text
+lithuania-retention-benchmark__<workbook_slug>__<NN>_<series>_Model-sheet.png
+```
+
+Example slug from `final_lithuania_model (1).xlsx`: `final_lithuania_model_1`.
+
+| Order | Filename fragment | Chart |
+|------:|-------------------|--------|
+| 01 | `…__01_population-total_…` | Total population |
+| 02 | `…__02_working-age-population_…` | Working-age population |
+| 03 | `…__03_old-age-dependency-ratio_…` | Dependency ratio (% working-age) |
+| 04 | `…__04_net-retained-contributors_…` | Net retained / year |
+| 05 | `…__05_fiscal-index-stylised_…` | Stylised fiscal index (not gov. balance) |
+| 06 | `…__06_population-delta-vs-baseline_…` | Population vs Baseline (thousands) |
+| 07 | `…__07_dashboard-2x2_…` | Four-panel slide dashboard |
+
+Each figure has a **footer** stating the **source `.xlsx`**, **Model** sheet, and **row range** (cached values).
+
+**CSV:** `lithuania-retention-benchmark__<slug>__Model-sheet_time-series_wide.csv` — wide table with `source_xlsx`, `excel_sheet`, and `model_row_range` columns on every row (unless `--no-csv`).
+
+**Requirements:** Python 3.10+ recommended; packages listed in **`requirements-figures.txt`** (`matplotlib`, `openpyxl`, `numpy`).
+
+**Sheet selection:** The script uses the sheet named **`Model`** if it exists; otherwise it falls back to the **third** worksheet (packaged order: Inputs, Scenario_Drivers, Model).
 
 ---
 
@@ -291,17 +376,5 @@ Default paths (if files exist): `final_lithuania_model (1).xlsx`, `final_lithuan
 
 ## Related documents
 
-- **`Q_AND_A_Answer_Doc.md`** — oral-exam style Q&A tied to the team deck.
-- **`lithuania_fiscal_benchmark_report.txt`** — latest run output.
-
----
-
-## Licence / attribution
-
-Euro Challenge team materials. The script is a **mechanical replication** of the team **final_lithuania_model** workbook for benchmarking and reproducibility.
-
----
-
-### Note on mathematical notation in Markdown
-
-This README avoids **LaTeX** delimiters (`\[ … \]`, `\frac{}`) because many Markdown previews **do not render** them. All equations are in **fenced code blocks** or **inline prose** so they stay readable in **Cursor, VS Code, GitHub, and printed PDFs**. If you paste into a LaTeX paper, translate the code blocks into your preferred notation.
+- **`docs/Q_AND_A_Answer_Doc.md`** — oral-exam style Q&A tied to the team deck.
+- **`outputs/lithuania_fiscal_benchmark_report.txt`** — latest text benchmark from the Node script.
