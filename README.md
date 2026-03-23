@@ -5,7 +5,7 @@ This repository holds an **Excel-based demographic scenario model** for Lithuani
 This document is written for **two audiences**:
 
 1. **EU-facing financial and policy analysts** — start with [Executive summary](#executive-summary-for-policy-and-finance-readers) and [How to interpret outputs](#how-to-interpret-the-outputs-eu-fiscal-analyst-lens).
-2. **Engineers and data staff** — see [Technical implementation](#technical-implementation-for-cs--data-staff).
+2. **Engineers and data folk** — see [Technical implementation](#technical-implementation-for-cs--data-staff).
 
 **Official long-term context (European Commission):**  
 [2024 Ageing Report — Lithuania country fiche (PDF)](https://economy-finance.ec.europa.eu/document/download/b8767642-877c-4605-ad16-8b4b174e1f05_en?filename=2024-ageing-report-country-fiche-Lithuania.pdf)
